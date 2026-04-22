@@ -1,64 +1,46 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
-const User = require('./models/User');
+
+const authRoutes = require('./routes/auth');
+const leadRoutes = require('./routes/leads');
+const requestRoutes = require('./routes/requests');
+const userRoutes = require('./routes/users');
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-const PORT = 5000;
-const MONGO_URI = 'mongodb://localhost:27017/userdetails';
+const PORT = process.env.PORT || 5000;
+const MONGO_URI = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/lead_analytics';
 
-mongoose.connect(MONGO_URI)
-  .then(() => console.log('Connected to MongoDB'))
-  .catch(err => console.error('Failed to connect to MongoDB:', err));
-
-// Admin Login Route
-app.post('/api/login', (req, res) => {
-  const { username, password } = req.body;
-  // Hardcoded for demonstration purposes. Use hashed passwords for production!
-  if (username === 'admin' && password === 'password') {
-    res.json({ success: true, token: 'fake-admin-token-123' });
-  } else {
-    res.status(401).json({ error: 'Invalid credentials' });
-  }
+app.get('/api/health', (req, res) => {
+  res.json({
+    ok: true,
+    mongoReadyState: mongoose.connection.readyState
+  });
 });
 
 // Routes
-app.post('/api/users', async (req, res) => {
-  try {
-    const { name, phoneNumber, address, pincode } = req.body;
-    const newUser = new User({ name, phoneNumber, address, pincode });
-    const savedUser = await newUser.save();
-    res.status(201).json(savedUser);
-  } catch (error) {
-    console.error('Error creating user:', error);
-    res.status(500).json({ error: 'Failed to create user' });
-  }
-});
+app.use('/api/auth', authRoutes);
+app.use('/api/leads', leadRoutes);
+app.use('/api/requests', requestRoutes);
+app.use('/api/users', userRoutes);
 
-app.get('/api/users', async (req, res) => {
+async function startServer() {
   try {
-    const users = await User.find({}, 'name phoneNumber address pincode createdAt').sort({ createdAt: -1 });
-    res.json(users);
-  } catch (error) {
-    console.error('Error fetching users:', error);
-    res.status(500).json({ error: 'Failed to fetch users' });
-  }
-});
+    await mongoose.connect(MONGO_URI);
+    console.log(`Connected to MongoDB using ${MONGO_URI}`);
 
-app.get('/api/users/:id', async (req, res) => {
-  try {
-    const user = await User.findById(req.params.id);
-    if (!user) return res.status(404).json({ error: 'User not found' });
-    res.json(user);
-  } catch (error) {
-    console.error('Error fetching user:', error);
-    res.status(500).json({ error: 'Failed to fetch user' });
+    app.listen(PORT, () => {
+      console.log(`Backend server running on http://localhost:${PORT}`);
+    });
+  } catch (err) {
+    console.error('Failed to connect to MongoDB.');
+    console.error('Check your MONGO_URI and MongoDB user credentials.');
+    console.error(err.message);
+    process.exit(1);
   }
-});
+}
 
-app.listen(PORT, () => {
-  console.log(`Backend server running on http://localhost:${PORT}`);
-});
+startServer();
