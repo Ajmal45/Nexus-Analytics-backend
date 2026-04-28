@@ -40,7 +40,11 @@ router.post('/login', async (req, res) => {
         id: user._id,
         name: user.name,
         email: user.email,
-        role: user.role
+        role: user.role,
+        phone: user.phone,
+        company: user.company,
+        bio: user.bio,
+        profileImage: user.profileImage
       }
     });
 
@@ -57,7 +61,9 @@ router.post('/login', async (req, res) => {
 // Register
 router.post('/register', async (req, res) => {
   try {
-    const { name, email, password } = req.body;
+    const { name, email, password, role } = req.body;
+    const allowedRoles = ['user', 'lead'];
+    const selectedRole = allowedRoles.includes(role) ? role : 'user';
 
     if (!name || !email || !password) {
       return res.status(400).json({ error: 'Name, email, and password are required' });
@@ -77,7 +83,8 @@ router.post('/register', async (req, res) => {
     user = new User({
       name,
       email,
-      password: hashedPassword
+      password: hashedPassword,
+      role: selectedRole
     });
 
     await user.save();
@@ -96,7 +103,11 @@ router.post('/register', async (req, res) => {
         id: user._id,
         name: user.name,
         email: user.email,
-        role: user.role
+        role: user.role,
+        phone: user.phone,
+        company: user.company,
+        bio: user.bio,
+        profileImage: user.profileImage
       }
     });
 

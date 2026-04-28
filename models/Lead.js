@@ -20,6 +20,10 @@ const leadSchema = new mongoose.Schema({
   isBlocked: { type: Boolean, default: false },
   assignedTo: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
   assignedToName: { type: String, default: null },
+  ownerUserId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
+  ownerUserName: { type: String, default: null },
+  description: { type: String, default: '' },
+  skills: [{ type: String }],
   notes: { type: String },
   createdAt: { type: Date, default: Date.now }
 });
