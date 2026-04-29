@@ -6,6 +6,7 @@ const authRoutes = require('./routes/auth');
 const leadRoutes = require('./routes/leads');
 const requestRoutes = require('./routes/requests');
 const userRoutes = require('./routes/users');
+const taskRoutes = require('./routes/tasks');
 
 const app = express();
 app.use(cors());
@@ -27,6 +28,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/leads', leadRoutes);
 app.use('/api/requests', requestRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/tasks', taskRoutes);
 
 async function startServer() {
   try {
